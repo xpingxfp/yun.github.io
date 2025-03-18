@@ -4,14 +4,14 @@
     "author":"xpingxfp",
     "short_name": "yun",
     "description": "更快地分析",
-    "start_url": "/yun.github.io//index.html",
+    "start_url": "/yun.github.io/index.html",
     "background_color": "#2f3d58",
     "theme_color": "#2f3d58",
     "orientation": "any",
     "display": "standalone",
     "icons": [
         {
-            "src": "/yun.github.io//icon.png",
+            "src": "/yun.github.io/icon.png",
             "sizes": "440x440"
         }
     ]

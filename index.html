@@ -275,7 +275,7 @@
         box.appendChild(header);
 
         let icon = document.createElement('img');
-        icon.src = `${basePath}/icon.png`;
+        icon.src = `${basePath}icon.png`;
         icon.alt = "icon";
         header.appendChild(icon);
 
@@ -313,7 +313,7 @@
             if (state) {
                 box.classList.add("ok");
                 footer.onmouseup = () => {
-                    if (currentPath === `${basePath}/` || currentPath.endsWith(`${basePath}inedx.html`)) {
+                    if (currentPath === `${basePath}` || currentPath.endsWith(`${basePath}inedx.html`)) {
                         window.location.href = "./app/page/start.html";
                     } else {
                         window.location.reload();
