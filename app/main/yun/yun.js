@@ -1,7 +1,5 @@
-const style = document.createElement('link');
-style.rel = 'stylesheet';
-style.href = '/app/main/yun/yun.css';
-document.head.appendChild(style);
+import { shortcut } from "../index.js";
+shortcut.addCSSToDoc("/app/main/yun/yun.css");
 
 // 随机id
 function generateRandomId() {

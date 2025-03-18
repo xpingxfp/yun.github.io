@@ -4,10 +4,10 @@ self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
         await cache.addAll([
-            '/',
-            'index.html',
-            'manifest.json',
-            'icon.png'
+            './',
+            './index.html',
+            './manifest.json',
+            './icon.png'
         ]);
         self.skipWaiting();
     })());
@@ -65,11 +65,11 @@ async function getDirHandle() {
         let request = indexedDB.open('yunDB', 1);
 
         request.onerror = () => {
-            resolve({ type: 'redirect', url: '/index.html' });
+            resolve({ type: 'redirect', url: './index.html' });
         };
 
         request.onupgradeneeded = () => {
-            resolve({ type: 'redirect', url: '/index.html' });
+            resolve({ type: 'redirect', url: './index.html' });
         }
 
         request.onsuccess = async (event) => {
@@ -87,13 +87,13 @@ async function getDirHandle() {
                 let dirHandle = getDirHandleRequest.result;
 
                 if (!dirHandle) {
-                    resolve({ type: 'redirect', url: '/index.html' });
+                    resolve({ type: 'redirect', url: './index.html' });
                     return;
                 }
 
                 const permissionStatus = await dirHandle.queryPermission();
                 if (permissionStatus !== 'granted') {
-                    resolve({ type: 'redirect', url: '/index.html' });
+                    resolve({ type: 'redirect', url: './index.html' });
                     return;
                 }
                 resolve(dirHandle);

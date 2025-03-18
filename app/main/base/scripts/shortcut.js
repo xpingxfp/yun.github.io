@@ -6,16 +6,7 @@ export let shortcut = {
     addCSSToDoc: (cssPath) => {
         let link = document.createElement('link');
 
-        const currentUrl = new URL(window.location.href);
-
-        const isInAppRoot = currentUrl.pathname.startsWith('/app/');
-
-        let adjustedCssPath;
-        if (isInAppRoot) {
-            adjustedCssPath = '/app/' + cssPath;
-        } else {
-            adjustedCssPath = '/' + cssPath;
-        }
+        let adjustedCssPath = basePath + cssPath;
 
         link.href = adjustedCssPath;
         link.rel = 'stylesheet';

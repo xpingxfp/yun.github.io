@@ -6,4 +6,4 @@ export let element = {
 }
 
 import { shortcut } from "../index.js";
-shortcut.addCSSToDoc('main/element/element.css');
+shortcut.addCSSToDoc('/app/main/element/element.css');

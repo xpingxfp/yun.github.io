@@ -25,5 +25,8 @@ function addCSSToDoc(url) {
     document.head.appendChild(link);
 }
 
-addJSToDoc('/app/path/yuns/dataType/dataType.js');
+window.basePath = "/yun.github.io/";
+// window.basePath = "";
+
+addJSToDoc(`${basePath}/app/path/yuns/dataType/dataType.js`);
 

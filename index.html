@@ -231,6 +231,8 @@
 
 <body>
     <script>
+        let basePath = "/yun.github.io/"
+
         let box = document.createElement('div');
         box.classList.add("box");
         document.body.appendChild(box);
@@ -273,7 +275,7 @@
         box.appendChild(header);
 
         let icon = document.createElement('img');
-        icon.src = "/icon.png";
+        icon.src = `${basePath}/icon.png`;
         icon.alt = "icon";
         header.appendChild(icon);
 
@@ -311,8 +313,8 @@
             if (state) {
                 box.classList.add("ok");
                 footer.onmouseup = () => {
-                    if (currentPath === '/' || currentPath.endsWith('/index.html')) {
-                        window.location.href = "app/page/start.html";
+                    if (currentPath === `${basePath}/` || currentPath.endsWith(`${basePath}inedx.html`)) {
+                        window.location.href = "./app/page/start.html";
                     } else {
                         window.location.reload();
                     }
@@ -401,7 +403,7 @@
             span.innerHTML = "你的浏览器支持service worker</br>";
             serviceWorkerSet.appendChild(span);
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
                     .then((registration) => {
                         serviceWorkerSet.innerHTML += "成功添加sw.js文件</br>";
                     })
@@ -563,7 +565,6 @@
             }
         }
     </script>
-    <!-- <script src="./load.js"></script> -->
 </body>
 
 </html>

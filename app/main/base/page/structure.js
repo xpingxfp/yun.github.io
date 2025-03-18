@@ -72,4 +72,4 @@ ghostElement.style.transformOrigin = '0 0';
 baseBoard.appendChild(ghostElement);
 
 import { shortcut } from "../index.js";
-shortcut.addCSSToDoc('main/base/page/page.css')
+shortcut.addCSSToDoc('/app/main/base/page/page.css')

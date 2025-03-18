@@ -1,6 +1,6 @@
 import { TemplateYun, page, eventList, menuInstance, shortcut, actionHistoryHandler, yunBox } from "../index.js";
 
-shortcut.addCSSToDoc('path/yuns/dataType/dataType.css');
+shortcut.addCSSToDoc('/app/path/yuns/dataType/dataType.css');
 
 function createYun() {
     let yun = new TemplateYun();

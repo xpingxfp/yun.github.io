@@ -417,7 +417,7 @@
             let configFile = await TempDirHandle.getFileHandle("config.json", { create: true });
             let snapshotFile = await TempDirHandle.getFileHandle("snapshot.jpg", { create: true })
 
-            const imgUrl = '/icon.png';
+            const imgUrl = '../../icon.png';
 
             const response = await fetch(imgUrl);
             if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
