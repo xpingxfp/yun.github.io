@@ -403,7 +403,7 @@
             span.innerHTML = "你的浏览器支持service worker</br>";
             serviceWorkerSet.appendChild(span);
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                navigator.serviceWorker.register(`${basePath}sw.js`, { scope: basePath })
                     .then((registration) => {
                         serviceWorkerSet.innerHTML += "成功添加sw.js文件</br>";
                     })
