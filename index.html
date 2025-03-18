@@ -3,12 +3,567 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>云思</title>
+    <link rel="manifest" href="./manifest.json">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            transition: 0.3s;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            background-color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            width: 300px;
+            height: 500px;
+            border-radius: 5px;
+            user-select: none;
+            box-shadow: 0 0 5px #adadad;
+            background-color: #FFF;
+            padding: 8px;
+        }
+
+        .box.set {
+            width: 60%;
+            max-width: 600px;
+        }
+
+        .box.close {
+            width: 0;
+            padding: 0;
+        }
+
+        .box img {
+            width: 40%;
+            margin: 8px;
+            background-color: #FFF;
+        }
+
+        .box img:hover {
+            border-radius: 50%;
+            box-shadow: 1px 1px 3px #000;
+        }
+
+        .box .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #000;
+            height: 136px;
+        }
+
+        .box .header .name {
+            font-size: 3rem;
+            width: 60%;
+            text-align: center;
+            position: relative;
+            right: -8px;
+        }
+
+        .box .header .name:hover {
+            background-color: #F27ED3;
+            border-radius: 10px 0 0 10px;
+            box-shadow: -3px 0 3px #a1107a;
+        }
+
+        .box .content {
+            height: 55%;
+            margin: 8px 0;
+            overflow-y: auto;
+            box-shadow: inset 0 0 2px #000;
+            border-radius: 5px;
+            padding: 0 8px;
+        }
+
+        .box .content::-webkit-scrollbar {
+            width: 0;
+        }
+
+        .box .footer {
+            height: 10%;
+            font-size: 23px;
+            cursor: pointer;
+            outline: none;
+            background: transparent;
+            color: #F27ED3;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: 700;
+            text-align: center;
+            line-height: 200%;
+            position: relative;
+            transition: all 0.5s;
+            z-index: 1;
+        }
+
+        .box .footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: #F27ED3;
+            z-index: -1;
+            transition: all 0.5s;
+        }
+
+        .box .footer:hover::before {
+            width: 50%;
+            border-radius: 0 0 0 10px;
+        }
+
+        .box .footer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background-color: #F27ED3;
+            z-index: -1;
+            transition: all 0.5s;
+        }
+
+        .box .footer:hover::after {
+            width: 50%;
+            border-radius: 0 10px 0 0;
+        }
+
+        .box .footer:hover {
+            color: white;
+            border-radius: 5px;
+        }
+
+        .box .footer:active:before {
+            background: #ff71d9;
+            width: 100%;
+            border-radius: 10px;
+            content: "错误";
+            z-index: 1;
+        }
+
+        .box .footer:active::after {
+            width: 0%;
+            content: "";
+        }
+
+        .box.ok .footer:active:before {
+            width: 0%;
+            content: "";
+        }
+
+        .box.ok .footer:active::after {
+            background: #b10082;
+            width: 100%;
+            border-radius: 10px;
+            content: "开始";
+            z-index: 1;
+        }
+
+        .box .tip {
+            margin: 8px;
+        }
+
+        .box .tip:hover {
+            color: #500000;
+            font-size: 1.1rem;
+        }
+
+        .box .column {
+            width: 100%;
+            margin: 4px auto;
+            border-bottom: 1px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .box .column:hover {
+            background-color: #F27ED3;
+        }
+
+        .box .column .button {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            margin: 8px;
+            text-align: center;
+            line-height: 30px;
+            font-size: 1.5rem;
+            background-color: #fff;
+        }
+
+        .box .column.ok .button {
+            border: 2px solid #52ff3e;
+            color: #52ff3e;
+        }
+
+        .box .column.set .button {
+            border: 2px solid #ff893e;
+            color: #ff893e;
+        }
+
+        .box .column.error .button {
+            border: 2px solid #ff413e;
+            color: #ff413e;
+        }
+
+        .box .column .button:hover {
+            transform: rotate(360deg);
+            font-size: 2.5rem;
+        }
+
+        .box .column .button:active {
+            transform: scale(0.9) translateX(-8px);
+        }
+    </style>
 </head>
 
 <body>
+    <script>
+        let box = document.createElement('div');
+        box.classList.add("box");
+        document.body.appendChild(box);
 
+        let setBox = document.createElement('div');
+        setBox.classList.add("box");
+        setBox.classList.add("set");
+        setBox.classList.add("close")
+        document.body.appendChild(setBox);
+        let setBoxOpenSource = null;
+
+        box.addEventListener('mouseover', (e) => {
+            if (!setBox.classList.contains("close")) return;
+            const multiple = 20;
+
+            let transformElement = (x, y) => {
+                let boxRect = box.getBoundingClientRect();
+                let calcX = -(y - boxRect.y - (boxRect.height / 2)) / multiple;
+                let calcY = (x - boxRect.x - (boxRect.width / 2)) / multiple;
+                box.style.transition = "none";
+                box.style.transform = "rotateX(" + calcX + "deg) " + "rotateY(" + calcY + "deg)";
+            }
+
+            let move = (e) => {
+                pos = { x: e.clientX, y: e.clientY };
+                transformElement(pos.x, pos.y);
+            }
+
+            let mouseout = () => {
+                box.style = "";
+                document.removeEventListener("mousemove", move);
+                box.removeEventListener("mouseout", mouseout);
+            }
+            document.addEventListener("mousemove", move);
+            box.addEventListener("mouseout", mouseout);
+        })
+
+        let header = document.createElement('div');
+        header.classList.add('header');
+        box.appendChild(header);
+
+        let icon = document.createElement('img');
+        icon.src = "/icon.png";
+        icon.alt = "icon";
+        header.appendChild(icon);
+
+        let name = document.createElement('div');
+        name.classList.add('name');
+        name.innerHTML = "云思";
+        header.appendChild(name);
+
+        let text = document.createElement('div');
+        text.innerHTML = "设置以下即可使用：";
+        box.appendChild(text);
+
+        let columnContent = document.createElement('div');
+        columnContent.classList.add('content');
+        box.appendChild(columnContent);
+
+        let footer = document.createElement('div');
+        footer.classList.add('footer');
+        box.appendChild(footer);
+
+        footer.innerHTML = "请完成上述后进入";
+
+        let columns = [];
+
+        footer.onmousedown = () => {
+            let state = true;
+            for (let i = 0; i < columns.length; i++) {
+                if (!columns[i].classList.contains('ok')) {
+                    state = false;
+                    break;
+                }
+            }
+            const currentPath = window.location.pathname;
+
+            if (state) {
+                box.classList.add("ok");
+                footer.onmouseup = () => {
+                    if (currentPath === '/' || currentPath.endsWith('/index.html')) {
+                        window.location.href = "app/page/start.html";
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            }
+        }
+
+        function column(name, set) {
+            let column = document.createElement('div');
+            column.classList.add("column");
+            columnContent.appendChild(column);
+
+            columns.push(column);
+
+            let span = document.createElement('span');
+            span.innerHTML = name;
+            column.appendChild(span);
+
+            let button = document.createElement('div');
+            button.classList.add("button");
+            button.innerHTML = "→";
+            column.appendChild(button);
+
+            column.addEventListener("mouseup", () => {
+                const isOpen = !setBox.classList.contains("close");
+
+                if (isOpen && setBoxOpenSource === column) {
+                    setBox.classList.add('close');
+                    setBoxOpenSource = null;
+                } else {
+                    setBoxOpenSource = column;
+                    setBox.classList.remove('close');
+                }
+                setBox.innerHTML = '';
+                if (setBox.classList.contains("close")) return;
+                setBox.appendChild(set);
+            })
+
+            column.setState = (state) => {
+                column.className = "column";
+                column.classList.add(state);
+            }
+
+            return column;
+        }
+
+        let serviceWorkerSet = document.createElement("div");
+        let serviceWorkerColumn = column("service worker 支持", serviceWorkerSet);
+
+
+        function getDBInstance(dbName, version = 1) {
+            return new Promise((resolve, reject) => {
+                let request = window.indexedDB.open(dbName, version);
+
+                request.onerror = (event) => {
+                    console.error("数据库打开失败", event);
+                    reject(new Error("数据库打开失败"));
+                };
+
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        function createYunDB() {
+            let request = window.indexedDB.open('yunDB', 1);
+
+            request.onerror = (error) => {
+                console.error(error);
+                let span = document.createElement("span");
+                span.innerHTML = "创建yunDB的时候发生错误";
+            }
+
+            request.onupgradeneeded = (event) => {
+                let db = event.target.result;
+                db.createObjectStore('app');
+                db.createObjectStore('save');
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            serviceWorkerColumn.classList.add("ok");
+            let span = document.createElement("span");
+            span.innerHTML = "你的浏览器支持service worker</br>";
+            serviceWorkerSet.appendChild(span);
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then((registration) => {
+                        serviceWorkerSet.innerHTML += "成功添加sw.js文件</br>";
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        serviceWorkerColumn.classList.add("error");
+                        serviceWorkerSet.innerHTML = `发生错误：</br>${error}`;
+                        console.error('Service Worker 注册失败:', error);
+                    });
+            });
+        } else {
+            serviceWorkerColumn.classList.add("error");
+            serviceWorkerSet.innerHTML = "你的浏览器不支持service worker</br>请下载一个支持service的浏览器";
+        }
+
+        let indexedDBSet = document.createElement('div');
+        let indexedDBColum = column("indexedDB 支持", indexedDBSet);
+
+
+        if ('indexedDB' in window) {
+            indexedDBColum.classList.add('ok');
+            createYunDB();
+            indexedDBSet.innerHTML += "yunDB已经成功创建</br>mimeDB已经成功创建</br>";
+        } else {
+            indexedDBColum.classList.add('error');
+            indexedDBSet.innerHTML = "你的浏览器不支持indexedDB</br>请下载支持indexedDB的浏览器"
+        }
+
+        let fileSystemSet = document.createElement('div');
+        let fileSystemColume = column("安装位置", fileSystemSet);
+
+        let selectAppDirHandle = document.createElement("div");
+        fileSystemSet.appendChild(selectAppDirHandle);
+
+        async function createFilesystem(dirHandle) {
+            try {
+                targetDirHandle = await dirHandle.getDirectoryHandle('yun', { create: true });
+
+                let appDir = await targetDirHandle.getDirectoryHandle('app', { create: true });
+
+                let saveDir = await targetDirHandle.getDirectoryHandle('save', { create: true });
+                await saveDir.getDirectoryHandle('Temp', { create: true });
+
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        }
+
+        async function saveAppDir(value, key) {
+            let yunDB = await getDBInstance('yunDB');
+            let transaction = yunDB.transaction(['app'], 'readwrite');
+            let app_store = transaction.objectStore('app');
+            let addRequest = app_store.add(value, key);
+
+            addRequest.onerror = (e) => {
+                console.error(e.target.error);
+            }
+        }
+
+        async function saveSaveDir(value, key) {
+            let yunDB = await getDBInstance('yunDB');
+            let transaction = yunDB.transaction(['save'], 'readwrite');
+            let app_store = transaction.objectStore('save');
+            let addRequest = app_store.add(value, key);
+
+            addRequest.onerror = (e) => {
+                console.error(e.target.error);
+            }
+        }
+
+        async function getappDirhande() {
+            return new Promise(async (resolve, reject) => {
+                let yunDB = await getDBInstance('yunDB');
+
+                let transaction = yunDB.transaction(['app'], 'readonly');
+                let app_store = transaction.objectStore('app');
+                let dirHandleRequest = app_store.get('dirHandle');
+
+                dirHandleRequest.onsuccess = async (e) => {
+                    resolve(e.target)
+                };
+
+                dirHandleRequest.onerror = (error) => {
+                    reject(error);
+                };
+
+            })
+        }
+
+        async function setSave() {
+            let appIDB = await getappDirhande();
+            let appDirHandle = appIDB.result;
+            let saveDirHandle = await appDirHandle.getDirectoryHandle('save');
+            saveSaveDir(saveDirHandle, 'dirHandle');
+            saveSaveDir([], 'recent');
+            saveSaveDir(null, 'current');
+        }
+
+        if (window.requestFileSystem || window.webkitRequestFileSystem) {
+            fileSystemColume.classList.add("set");
+            (async () => {
+                let dirHandleRequest = await getappDirhande();
+                if (dirHandleRequest.result) {
+                    selectAppDirHandle.innerHTML = "已经选择安装位置";
+                    fileSystemColume.setState("ok");
+                    CheckPermissions();
+                } else {
+                    selectAppDirHandle.innerHTML = "点击选择安装位置";
+                    selectAppDirHandle.onclick = async () => {
+                        let dirHandle = await window.showDirectoryPicker();
+                        await createFilesystem(dirHandle);
+                        let yunDirHandle = await dirHandle.getDirectoryHandle("yun")
+                        await saveAppDir(yunDirHandle, "dirHandle");
+                        setSave();
+                        fileSystemColume.setState("ok");
+                        CheckPermissions();
+                        selectAppDirHandle.innerHTML = "已经选择安装位置";
+                    }
+                }
+
+            })()
+        } else {
+            fileSystemColume.classList.add("error");
+            fileSystemSet.innerHTML = "你的浏览器不支持fileSystem API</br>请下载支持fileSystem API的浏览器";
+        }
+
+        let permissionSet = document.createElement("div");
+        let permissionColumn = column("给予权限", permissionSet);
+
+        async function CheckPermissions() {
+            let dirHandleRequest = await getappDirhande();
+            let dirHandle = dirHandleRequest.result;
+            let permission = await dirHandle.queryPermission();
+            if (permission == "prompt") {
+                permissionColumn.setState("set");
+                let getPermission = document.createElement("div");
+                getPermission.innerHTML = "点击这里开始给予权限";
+
+                let permissionAlreadySet = false;
+                permissionSet.childNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE && node.innerHTML === getPermission.innerHTML) {
+                        permissionAlreadySet = true;
+                    }
+                });
+
+                if (!permissionAlreadySet) {
+                    permissionSet.appendChild(getPermission);
+                }
+
+                getPermission.onclick = async () => {
+                    await dirHandle.requestPermission();
+                    CheckPermissions();
+                }
+            } else if (permission == "granted") {
+                permissionColumn.setState("ok");
+            } else if (permission == "denied") {
+                permissionColumn.setState("error");
+            }
+        }
+    </script>
+    <!-- <script src="./load.js"></script> -->
 </body>
 
 </html>

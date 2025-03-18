@@ -1,0 +1,60 @@
+.yun {
+    position: absolute;
+    border: 1px solid #000;
+    width: 100px;
+    height: 100px;
+    user-select: none;
+    transition: 0.1s;
+}
+
+.yun>.box {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.yun>.box>.header {
+    width: 100%;
+    height: 1.6rem;
+    overflow: hidden;
+    background-color: rgb(0, 136, 255);
+    cursor: grab;
+}
+
+.yun>.box>.content {
+    width: 100%;
+    height: calc(100% - 1.6rem);
+    overflow: auto;
+    background-color: rgb(255, 255, 255);
+}
+
+.yun>.box>.content:hover {
+    cursor: text;
+}
+
+.yun>.box>.content:focus {
+    outline: none;
+}
+
+.yun>.box>.content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.yun>.box>.content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.yun>.box>.content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    cursor: pointer;
+}
+
+.yun.error {
+    box-shadow: 0 0 5px #FF4136;
+}
+
+.yun.error>.box>.header {
+    background-color: #FF4136;
+}

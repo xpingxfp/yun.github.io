@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下载在本地</title>
+</head>
+
+<body>
+    <script>
+        async function getDirHandle() {
+            return new Promise((resolve, reject) => {
+                let request = indexedDB.open('yunDB', 1);
+
+                request.onerror = (event) => {
+                    reject(new Error(`Database error: ${event.target.errorCode}`));
+                };
+
+                request.onupgradeneeded = () => {
+                    indexedDB.deleteDatabase('yunDB');
+                    reject(new Error(`indexedDB未注册`));
+                }
+
+                request.onsuccess = async (event) => {
+                    let db = event.target.result;
+                    let transaction = db.transaction(['app'], 'readonly');
+                    let objectStore = transaction.objectStore('app');
+
+                    let getDirHandleRequest = objectStore.get('dirHandle');
+
+                    getDirHandleRequest.onerror = (event) => {
+                        reject(new Error(`Error fetching directory handle from DB: ${event.target.error}`));
+                    };
+
+                    getDirHandleRequest.onsuccess = async (event) => {
+                        let dirHandle = getDirHandleRequest.result;
+
+                        if (!dirHandle) {
+                            reject(new Error("无法找到或恢复目录句柄"));
+                            return;
+                        }
+
+                        let permissionStatus = await dirHandle.queryPermission();
+                        if (permissionStatus !== 'granted') {
+                            reject(new Error(`请给予文件访问权限`));
+                            return;
+                        }
+                        resolve(dirHandle);
+                    };
+                };
+            });
+        }
+
+        async function saveFetchedFileToDirectory(directoryHandle, url, fileName) {
+            try {
+                let fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
+                let writableStream = await fileHandle.createWritable();
+                let response = await fetch(url);
+                if (!response.ok) {
+                    console.log(response);
+                    throw new Error('Network response was not ok');
+                }
+                let blob = await response.blob();
+                await writableStream.write(await blob.text());
+                await writableStream.close();
+                console.log(fileName, '已成功保存到指定目录。');
+            } catch (error) {
+                console.error('保存文件时出错：', `path: ${url}\n`, error);
+                throw error;
+            }
+        }
+
+        async function createDirectoryStructure(directoryHandle, structure) {
+            for (let item of structure.contents) {
+                if (item.type === 'folder') {
+                    let newDirHandle = await directoryHandle.getDirectoryHandle(item.folderName, { create: true });
+                    await createDirectoryStructure(newDirHandle, item); // 递归创建子目录
+                } else if (item.type === 'file') {
+                    await saveFetchedFileToDirectory(directoryHandle, `/app/${item.path}`, item.fileName);
+                }
+            }
+        }
+
+        async function downloadAndSaveFilesFromVersionJson(dirHandle, versionJsonUrl) {
+            let response = await fetch(versionJsonUrl);
+            if (!response.ok) throw new Error('Failed to fetch version.json');
+            let versionJson = await response.json();
+
+            let yunDir = await dirHandle.getDirectoryHandle('yun');
+            let appDir = await yunDir.getDirectoryHandle('app');
+
+            await createDirectoryStructure(appDir, versionJson);
+        }
+
+        async function baseDownload() {
+            let dirHandle = await getDirHandle();
+            await downloadAndSaveFilesFromVersionJson(dirHandle, '/app/version.json');
+        }
+
+        let btn = document.createElement('button');
+        btn.innerHTML = '下载基本文件';
+        document.body.appendChild(btn);
+        btn.onclick = () => {
+            baseDownload().catch(error => console.error('下载过程中发生错误:', error));
+        }
+
+        let btn2 = document.createElement('button');
+        btn2.innerHTML = '给予权限';
+        document.body.appendChild(btn2);
+        btn2.onclick = async () => {
+            let yunDB = window.indexedDB.open('yunDB');
+
+            yunDB.onsuccess = async (event) => {
+                let db = event.target.result;
+                let transaction = db.transaction(['app'], 'readonly');
+                let objectStore = transaction.objectStore('app');
+
+                let getDirHandleRequest = objectStore.get('dirHandle');
+
+                getDirHandleRequest.onsuccess = async (event) => {
+                    let dirHandle = getDirHandleRequest.result;
+
+                    let permissionStatus = await dirHandle.queryPermission();
+                    if (permissionStatus !== 'granted') {
+                        dirHandle.requestPermission();
+                    }
+                };
+            };
+        }
+
+        function diff(obj1, obj2, path = [], diffPaths) {
+            if (typeof obj1 !== typeof obj2) {
+                // 如果类型不匹配且是文件对象，则添加其路径
+                if (typeof obj1 === 'object' && obj1 !== null && obj1.path) {
+                    diffPaths.add(obj1.path);
+                }
+                if (typeof obj2 === 'object' && obj2 !== null && obj2.path) {
+                    diffPaths.add(obj2.path);
+                }
+                return;
+            }
+
+            if (Array.isArray(obj1)) {
+                for (let i = 0; i < Math.max(obj1.length, obj2.length); i++) {
+                    if (i < obj1.length && i < obj2.length) {
+                        diff(obj1[i], obj2[i], [...path, i], diffPaths);
+                    } else if (i >= obj1.length) {
+                        if (obj2[i].path) {
+                            diffPaths.add(obj2[i].path);
+                        }
+                    } else {
+                        if (obj1[i].path) {
+                            diffPaths.add(obj1[i].path);
+                        }
+                    }
+                }
+            } else if (typeof obj1 === 'object' && obj1 !== null && obj2 !== null) {
+                const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+                keys.forEach(key => {
+                    if (obj1[key] !== obj2[key]) {
+                        if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
+                            diff(obj1[key], obj2[key], [...path, key], diffPaths);
+                        } else {
+                            // 如果发现差异并且是文件对象，则添加其路径
+                            if (obj1.path) {
+                                diffPaths.add(obj1.path);
+                            }
+                            if (obj2.path) {
+                                diffPaths.add(obj2.path);
+                            }
+                        }
+                    }
+                });
+            } else {
+                if (obj1 !== obj2) {
+                    // 如果发现差异并且是文件对象，则添加其路径
+                    if (obj1.path) {
+                        diffPaths.add(obj1.path);
+                    }
+                    if (obj2.path) {
+                        diffPaths.add(obj2.path);
+                    }
+                }
+            }
+        }
+
+        function compareVersions(serverData, clientData) {
+            const diffPaths = new Set();
+            diff(serverData, clientData, [], diffPaths);
+            return Array.from(diffPaths);
+        }
+
+        async function createDirectory(handle, pathSegments) {
+            if (pathSegments.length === 0) return handle;
+
+            const directoryName = pathSegments.shift();
+            let subdirHandle;
+            try {
+                subdirHandle = await handle.getDirectoryHandle(directoryName);
+            } catch (error) {
+                console.error(`Failed to get or create directory ${directoryName}:`, error);
+                throw error;
+            }
+
+            return createDirectory(subdirHandle, pathSegments);
+        }
+
+        async function fetchAndSaveFiles(directoryHandle, filePaths) {
+            for (const fullPath of filePaths) {
+                try {
+                    // 解析路径并提取文件名和目录路径
+                    const pathParts = fullPath.split(/\\|\//); // 支持不同平台的路径分隔符
+                    const fileName = pathParts.pop(); // 最后一个部分是文件名
+                    const dirPathSegments = pathParts; // 其余部分是目录路径
+
+                    // 获取或创建相应的子目录
+                    const subdirHandle = await createDirectory(directoryHandle, [...dirPathSegments]);
+
+                    // 使用 fetch 获取文件内容
+                    const response = await fetch(`/app/${fullPath.replace(/\\/g, '/')}`); // 转换反斜杠为斜杠以适应URL格式
+                    if (!response.ok) {
+                        console.error(`Failed to fetch ${fullPath}:`, response.statusText);
+                        continue;
+                    }
+
+                    const content = await response.arrayBuffer(); // 读取文件内容为 ArrayBuffer，适用于所有类型的文件
+
+                    // 获取文件句柄并写入内容
+                    const fileHandle = await subdirHandle.getFileHandle(fileName);
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+
+                    console.log(`已成功保存到指定目录: ${fullPath}`);
+                } catch (error) {
+                    console.error(`错误处理文件 ${fullPath}:`, error);
+                }
+            }
+        }
+
+        let btn3 = document.createElement('button');
+        btn3.innerHTML = "检测更新";
+        document.body.appendChild(btn3);
+        btn3.onclick = async () => {
+            let serverData = await fetch('/app/version.json');
+            let localData = await fetch('/version.json');;
+            let diffResult = compareVersions(await serverData.json(), await localData.json());
+            console.log(diffResult);
+
+            if (diffResult.length == '0') return;
+            let updataBtn = document.createElement("button");
+            updataBtn.innerHTML = "更新";
+            document.body.appendChild(updataBtn);
+            updataBtn.onclick = async () => {
+                let dirHandle = await getDirHandle();
+                let yunDir = await dirHandle.getDirectoryHandle('yun');
+                let appDir = await yunDir.getDirectoryHandle('app');
+                fetchAndSaveFiles(appDir, diffResult);
+                updataBtn.remove();
+            }
+        }
+
+    </script>
+</body>
+
+</html>

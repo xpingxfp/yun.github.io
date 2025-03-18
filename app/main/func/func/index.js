@@ -1,0 +1,1 @@
+export { FuncComponent, FuncTable, FuncItem, Func } from "./func.js"

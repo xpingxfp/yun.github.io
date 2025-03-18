@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            user-select: none;
+            /* box-shadow: 0 0 1px 1px #000; */
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .header {
+            display: flex;
+            height: 80%;
+        }
+
+        .header .left {
+            flex: 1;
+            padding: 30px 0;
+        }
+
+        .header .content {
+            flex: 4;
+            position: relative;
+            display: flex;
+            padding: 20px 3%;
+        }
+
+        .header .content .message {
+            height: 30px;
+            flex: 5;
+            background-color: #F27ED35f;
+            border-radius: 5px;
+            line-height: 30px;
+            padding: 0 8px;
+            z-index: 2;
+            color: #FFF;
+            text-shadow: 0 0 2px #000;
+            font-weight: 600;
+        }
+
+        .header .content button {
+            flex: 1;
+            height: 30px;
+            margin: 0 20px;
+            background-color: #F27ED35f;
+            outline: none;
+            border: none;
+            border-radius: 5px;
+            z-index: 2;
+            color: #FFF;
+            text-shadow: 0 0 2px #000;
+            font-weight: 600;
+        }
+
+        .header .content button:hover {
+            background-color: #F27ED37f;
+        }
+
+        .header .content button:active {
+            background-color: #F27ED38f;
+        }
+
+
+        .header .content img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        footer {
+            position: absolute;
+            height: 18%;
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            text-align: center;
+            align-items: center;
+            bottom: 0;
+        }
+
+        footer .file {
+            width: 100px;
+            height: 50px;
+            background-color: #F27ED3;
+            border-radius: 5px;
+            line-height: 50px;
+            overflow: hidden;
+        }
+
+        footer .file:hover {
+            box-shadow: 0 0 3px #000;
+        }
+
+        footer .file:active {
+            background-color: #f6a8e1;
+        }
+
+        button {
+            height: 10%;
+            width: 80%;
+            margin: 5%;
+            background-color: #F27ED3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            box-shadow: 0 0 3px #000;
+
+        }
+
+        button:active {
+            background-color: #f6a8e1;
+        }
+
+        footer.none {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="left">
+            <button onclick="newFile()"> 新建</button>
+            <button onclick="openFile()">打开</button>
+        </div>
+        <div id="show" class="content">
+            <div class="message"></div>
+            <button onclick="entrie()">进入</button>
+        </div>
+        <div class="right">
+            <button>语言</button>
+            <button>设置</button>
+        </div>
+    </div>
+    <footer></footer>
+    <script>
+        async function openFile() {
+            try {
+                let dirHandle = await window.showDirectoryPicker();
+                await setRecent(dirHandle);
+                await setCurrent(dirHandle);
+                updateContent();
+            } catch (err) {
+                if (err.name === "AbortError") {
+                    console.log("用户取消选择");
+                } else {
+                    console.error(err);
+                }
+            }
+        }
+
+        function entrie() {
+            window.location.href = './yun/yun.html';
+        }
+
+        function getDBInstance(dbName, version = 1) {
+            return new Promise((resolve, reject) => {
+                let request = window.indexedDB.open(dbName, version);
+
+                request.onerror = (event) => {
+                    console.error("数据库打开失败", event);
+                    reject(new Error("数据库打开失败"));
+                };
+
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        async function updateContent() {
+            let showBox = document.querySelector("#show");
+            let message = showBox.querySelector(".message");
+            message.innerHTML = "";
+            let image = showBox.querySelector("img");
+            if (!image) {
+                image = document.createElement("img");
+                showBox.appendChild(image);
+            }
+
+            let yunDB = await getDBInstance("yunDB");
+
+            let transaction = yunDB.transaction(['save'], 'readonly');
+            let save_store = transaction.objectStore('save');
+            let request = save_store.get('current');
+
+            request.onsuccess = async (event) => {
+                let dirHandle = event.target.result;
+                let name = document.createElement("span");
+                name.innerHTML = dirHandle.name;
+                message.appendChild(name);
+                let imgFileHnadle = await dirHandle.getFileHandle("snapshot.jpg", { create: false })
+                let imgFile = await imgFileHnadle.getFile();
+                image.src = URL.createObjectURL(imgFile);
+            }
+        }
+
+        async function checkDirectory(directoryHandle) {
+            try {
+                let accessible = false;
+                for await (const entry of directoryHandle.values()) {
+                    accessible = true;
+                    break;
+                }
+
+                if (!accessible) {
+                    return false;
+                }
+
+                let configFile = await directoryHandle.getFileHandle("config.json", { create: false });
+
+                let yunFile = await directoryHandle.getFileHandle("yun.json", { create: false });
+
+                if (configFile, yunFile) {
+                    return true;
+                }
+            } catch (err) {
+                if (err.name === 'NotFoundError') {
+                    return false;
+                } else {
+                    console.error('发生错误:', err);
+                    throw err;
+                }
+            }
+        }
+
+
+        async function updateRecent() {
+            let yunDB = await getDBInstance("yunDB");
+
+            let transaction = yunDB.transaction(['save'], 'readonly');
+            let save_store = transaction.objectStore('save');
+            let recentRequest = save_store.get('recent');
+
+            recentRequest.onerror = (error) => {
+                console.log(error);
+            }
+
+            recentRequest.onsuccess = async (event) => {
+                let recent = recentRequest.result;
+                let footer = document.querySelector('footer');
+                if (recent.length == 0) {
+                    footer.innerHTML = '还没有创建过文件，新建一个试试吧';
+                    footer.classList.add('none');
+                } else {
+                    let showHnadle = recent.at(-1);
+                    await setCurrent(showHnadle);
+                    updateContent();
+                    recent.reverse().forEach(async dirHandle => {
+                        let isOk = await checkDirectory(dirHandle);
+                        if (!isOk) {
+                            setRecent(dirHandle, true);
+                            return;
+                        }
+                        let fileBox = document.createElement('div');
+                        fileBox.classList.add("file");
+                        fileBox.innerHTML = dirHandle.name;
+                        footer.appendChild(fileBox);
+                        fileBox.onclick = async () => {
+                            await setCurrent(dirHandle);
+                            updateContent();
+                        }
+                    });
+                }
+            }
+        }
+
+        updateRecent();
+
+        async function getDirHandle() {
+            return new Promise((resolve, reject) => {
+                let yunDB = window.indexedDB.open("yunDB");
+
+                yunDB.onerror = (error) => {
+                    reject(new Error(error));
+                }
+
+                yunDB.onsuccess = (event) => {
+                    let db = event.target.result;
+                    let transaction = db.transaction(["app"], "readonly");
+                    let app_store = transaction.objectStore("app");
+
+                    let dirHandleRequest = app_store.get("dirHandle");
+
+                    dirHandleRequest.onerror = (error) => {
+                        reject(new Error(error));
+                    }
+
+                    dirHandleRequest.onsuccess = (event) => {
+                        let dirHandle = event.target.result;
+                        resolve(dirHandle);
+                    }
+                }
+            })
+        }
+
+        async function setCurrent(value) {
+            try {
+                let yunDB = await getDBInstance("yunDB");
+
+                let transaction = yunDB.transaction(['save'], 'readwrite');
+                let save_store = transaction.objectStore('save');
+
+                let request = save_store.put(value, 'current');
+
+                request.onerror = (event) => {
+                    console.error("数据更新失败", event.target.error);
+                    throw new Error("数据更新失败");
+                };
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(new Error("事务失败"));
+                });
+            } catch (error) {
+                console.error("setCurrent函数执行过程中发生错误:", error);
+                throw error;
+            }
+        }
+
+        async function setRecent(value, remove = false) {
+            try {
+                let yunDB = await getDBInstance("yunDB");
+
+                let transaction = yunDB.transaction(['save'], 'readwrite');
+                let save_store = transaction.objectStore('save');
+                let request = save_store.get("recent");
+
+                request.onsuccess = async (event) => {
+                    recent = event.target.result || [];
+                    let size = 10;
+
+                    for (let i = 0; i < recent.length; i++) {
+                        if (await value.isSameEntry(recent[i])) {
+                            recent.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    if (recent.length >= size) {
+                        recent.shift();
+                    }
+
+                    if (remove) {
+                        recent = recent.filter(item => item != value);
+                    } else {
+                        recent.push(value);
+                    }
+
+                    let transaction = yunDB.transaction(['save'], 'readwrite');
+                    let save_store = transaction.objectStore('save');
+                    let putRequest = save_store.put(recent, "recent");
+
+                    putRequest.onsuccess = () => {
+                    };
+
+                    putRequest.onerror = (event) => {
+                        console.error("数据更新失败", event.target.error);
+                        throw new Error("数据更新失败");
+                    };
+
+                    await new Promise((resolve, reject) => {
+                        transaction.oncomplete = resolve;
+                        transaction.onerror = () => reject(new Error("事务失败"));
+                    });
+                };
+
+                request.onerror = (event) => {
+                    console.error("获取数据失败", event.target.error);
+                    throw new Error("获取数据失败");
+                };
+            } catch (error) {
+                console.error("setRecent函数执行过程中发生错误:", error);
+                throw error;
+            }
+        }
+
+        async function newFile() {
+            let dirHandle = await getDirHandle();
+            let saveDirHandle = await dirHandle.getDirectoryHandle("save", { create: false });
+            let TempDirHandle = await saveDirHandle.getDirectoryHandle("Temp", { create: false });
+
+            await setCurrent(TempDirHandle);
+            await setRecent(TempDirHandle);
+
+            for await (let [name, handle] of TempDirHandle.entries()) {
+                await TempDirHandle.removeEntry(name)
+                    .catch(error => console.error(`Failed to remove entry ${name}:`, error));
+            }
+
+            let logDir = await TempDirHandle.getDirectoryHandle("logs", { create: true });
+            let yunFile = await TempDirHandle.getFileHandle("yun.json", { create: true });
+            let configFile = await TempDirHandle.getFileHandle("config.json", { create: true });
+            let snapshotFile = await TempDirHandle.getFileHandle("snapshot.jpg", { create: true })
+
+            const imgUrl = '/icon.png';
+
+            const response = await fetch(imgUrl);
+            if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+            const blob = await response.blob();
+
+            const writableStream = await snapshotFile.createWritable();
+            await writableStream.write(blob);
+            await writableStream.close();
+
+            window.location.href = './yun/yun.html';
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,227 @@
+#baseboard {
+    background-color: #555;
+}
+
+
+/*  */
+
+.yun {
+    border-radius: 5px;
+    background-color: #333;
+    box-shadow: 0 0 5px #000;
+    border: none;
+    color: #fff;
+    padding: 0;
+}
+
+.yun.checked {
+    box-shadow: 0 0 5px rgb(0, 4, 255);
+}
+
+.yun .yunBox {
+    border-radius: 5px;
+    background-color: #333;
+    box-shadow: 0 0 5px #000;
+    border: none;
+    color: #fff;
+}
+
+.yun .yunBox .header {
+    padding: 0 8px;
+    font-size: 16px;
+    border: none;
+    overflow: hidden;
+}
+
+.yun .yunBox .header:hover {
+    background-color: #555;
+}
+
+.yun .yunBox .content {
+    font-size: 14px;
+    border: none;
+    box-shadow: inset 0 0 1px #000;
+    overflow: hidden;
+}
+
+.yun .yunBox .resizerBottomRight {
+    border-radius: 50%;
+    background-color: transparent;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.yun .yunBox .resizerBottomRight:hover {
+    background-color: #fff;
+}
+
+.yun .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #fff;
+    position: absolute;
+    border: none;
+}
+
+.yun .dot.input {
+    background-color: #000;
+}
+
+.yun .dot.output {
+    background-color: #00f;
+}
+
+.yun .yunBox button {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 0px 4px;
+}
+
+.yun .yunBox button:hover {
+    background-color: #555;
+}
+
+.yun .yunBox input {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+}
+
+.yun .yunBox textarea {
+    background-color: #333;
+    color: #fff;
+    width: 100%;
+    height: 100%;
+}
+
+.yun .yunBox select {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.yun .yunBox select:hover {
+    background-color: #555;
+}
+
+
+/*  */
+
+#menuBox {
+    background-color: #555;
+    border-radius: 5px;
+    box-shadow: 0 0 5px #000;
+    border: none;
+    width: 150px;
+}
+
+#menuBox>div {
+    font-size: 14px;
+    border: none;
+}
+
+#menuBox>div .menuTitle {
+    text-align: center;
+    border: none;
+    color: #ccc;
+    /* box-shadow: 0 0 5px #000; */
+}
+
+#menuBox>div .menuItem {
+    padding: 8px;
+    border: none;
+    background-color: #999;
+    box-shadow: 0 0 5px #000;
+    line-height: 24px;
+}
+
+#menuBox>div .menuItem:hover {
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px #000;
+}
+
+#menuBox>div .menuItem.tast {
+    color: #ccc;
+}
+
+/*  */
+
+.editor-yun textarea {
+    color: #fff;
+}
+
+.editor-menu span {
+    color: #fff;
+    font-size: 14px;
+}
+
+.editor-menu span:hover {
+    color: #000;
+    background-color: #555;
+    border-radius: 5px;
+    padding: 0px 4px;
+}
+
+/*  */
+
+.IONode-importNode-url {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 0px 4px;
+    margin-right: 10px;
+    height: 30px;
+}
+
+.IONode-importNode-url:focus {
+    outline: none;
+}
+
+.IONode-importNode-url:hover {
+    background-color: #555;
+}
+
+.IONode-importNode-typeSelect {
+    display: flex;
+}
+
+.IONode-importNode-typeSelect select {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 0px 4px;
+    margin-right: 10px;
+    width: 80%;
+    /* box-shadow: 0 0 5px #000; */
+}
+
+.IONode-importNode-typeSelect select:hover {
+    background-color: #555;
+}
+
+.IONode-importNode-typeSelect button {
+    background-color: #333;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 0px 4px;
+    position: absolute;
+    right: 0;
+}
+
+.IONode-importNode-typeSelect button:hover {
+    background-color: #555;
+}

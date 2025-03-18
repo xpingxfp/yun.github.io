@@ -1,0 +1,21 @@
+.dot {
+    width: 10px;
+    height: 10px;
+    background-color: #00000044;
+    position: absolute;
+    top: 0px;
+    cursor: pointer;
+}
+
+.dot.temp {
+    z-index: -1;
+    background-color: #00ff3c;
+}
+
+.dot.output {
+    right: -10px;
+}
+
+.dot.input {
+    left: -10px;
+}

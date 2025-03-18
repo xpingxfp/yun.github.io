@@ -1,0 +1,18 @@
+{
+    "lang": "zh-CN",
+    "name": "云思",
+    "author":"xpingxfp",
+    "short_name": "yun",
+    "description": "更快地分析",
+    "start_url": "index.html",
+    "background_color": "#2f3d58",
+    "theme_color": "#2f3d58",
+    "orientation": "any",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "440x440"
+        }
+    ]
+}
